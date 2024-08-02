@@ -1,4 +1,4 @@
-func newDefault{{.upperStartCamelObject}}Model(config gormdb.Config) *default{{.upperStartCamelObject}}Model {
+{{/* func newDefault{{.upperStartCamelObject}}Model(config gormdb.Config) *default{{.upperStartCamelObject}}Model {
 
     {{if .withCache}}
         cacheGormDB := gormdb.MustNewCacheGormDB[{{.upperStartCamelObject}}, {{.pkType}}](config)
@@ -11,5 +11,4 @@ func newDefault{{.upperStartCamelObject}}Model(config gormdb.Config) *default{{.
 		db: gormDB,
     }
     {{end}}
-}
-
+} */}}

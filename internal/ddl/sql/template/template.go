@@ -56,6 +56,20 @@ package {{.pkg}}
 {{.customized}}
 `, DoNotEditHead)
 
+// ModelGen defines a template for model
+var ModelGen1 = fmt.Sprintf(`%s
+
+package {{.pkg}}
+{{.imports}}
+{{.vars}}
+{{.types}}
+{{.new}}
+{{.opCode}}
+{{.extraMethod}}
+{{.tableName}}
+{{.customized}}
+`, DoNotEditHead)
+
 // Insert defines a template for insert code in model
 //
 //go:embed gorm_tpl/insert.tpl
@@ -80,6 +94,9 @@ var UpdateMethod string
 //
 //go:embed gorm_tpl/import.tpl
 var Imports string
+
+//go:embed gorm_tpl/default-model.tpl
+var DefaultModel string
 
 // ImportsNoCache defines a import template for model in normal case
 //

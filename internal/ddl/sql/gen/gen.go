@@ -126,32 +126,39 @@ func newDefaultOption() Option {
 	}
 }
 func (g *defaultGenerator) StartFromDDL(filename string, withCache, strict bool, database string) error {
-	modeList, err := g.genFromDDL(filename, withCache, strict, database)
+	modeList, dbModelCode, err := g.genFromDDL(filename, withCache, strict, database)
 	if err != nil {
 		return err
 	}
-	return g.createFile(modeList)
+	return g.createFile(modeList, dbModelCode)
 }
-func (g *defaultGenerator) genFromDDL(filename string, withCache, strict bool, database string) (map[string]*codeTuple, error) {
+func (g *defaultGenerator) genFromDDL(filename string, withCache, strict bool, database string) (map[string]*codeTuple, string, error) {
 	m := make(map[string]*codeTuple)
 
 	tables, err := parser.Parse(filename, database, strict)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
+	modelInterfaceName := make([]string, 0, len(tables))
 	for _, e := range tables {
+		modelInterfaceName = append(modelInterfaceName, stringx.From(e.Name.ToCamel()).Untitle()+"Model")
 		gencode, customerCode, err := g.genModel(*e, withCache)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 		m[e.Name.Source()] = &codeTuple{
 			modelCode:       gencode,
 			modelCustomCode: customerCode,
 		}
 	}
-	return m, nil
+	dbModelCode, err := genDefaultDBModel(tables, withCache, g.pkg)
+	if err != nil {
+		return nil, "", err
+	}
+	fmt.Println(dbModelCode)
+	return m, dbModelCode, nil
 }
-func (g *defaultGenerator) createFile(modelList map[string]*codeTuple) error {
+func (g *defaultGenerator) createFile(modelList map[string]*codeTuple, defaultModelCode string) error {
 	dirAbs, err := filepath.Abs(g.dir)
 	if err != nil {
 		return err
@@ -190,6 +197,17 @@ func (g *defaultGenerator) createFile(modelList map[string]*codeTuple) error {
 		if err != nil {
 			return err
 		}
+	}
+	modelFilename, err := format.FileNamingFormat(g.cfg.NamingFormat,
+		"default_model")
+	if err != nil {
+		return err
+	}
+	name := util.SafeString(modelFilename) + "_gen.go"
+	defaultModelFilename := filepath.Join(dirAbs, name)
+	err = os.WriteFile(defaultModelFilename, []byte(defaultModelCode), os.ModePerm)
+	if err != nil {
+		return err
 	}
 
 	// generate error file
@@ -253,12 +271,12 @@ func (g *defaultGenerator) genModel(in parser.Table, withCache bool) (string, st
 	if err != nil {
 		return "", "", err
 	}
-	uniqueKeyCode, err := genFindAndUpdateOneByUniqueKey(table, withCache)
-	if err != nil {
-		return "", "", err
-	}
+	//uniqueKeyCode, err := genFindAndUpdateOneByUniqueKey(table, withCache)
+	//if err != nil {
+	//	return "", "", err
+	//}
 	var list []string
-	list = append(list, insertCodeInterface, findByPKInterface, updateByPKInterface, deleteInterface, uniqueKeyCode.findOneInterfaceMethod)
+	list = append(list, insertCodeInterface, findByPKInterface, updateByPKInterface, deleteInterface /*, uniqueKeyCode.findOneInterfaceMethod*/)
 	typesCode, err := genTypes(table, strings.Join(list, "\n"), withCache)
 	if err != nil {
 		return "", "", err
@@ -275,7 +293,7 @@ func (g *defaultGenerator) genModel(in parser.Table, withCache bool) (string, st
 	if err != nil {
 		return "", "", err
 	}
-	dbModelOpCode = append(dbModelOpCode, insertCode, findByPKCode, updateByPKCode, deleteCode, uniqueKeyCode.findOneMethod)
+	dbModelOpCode = append(dbModelOpCode, insertCode, findByPKCode, updateByPKCode, deleteCode /*uniqueKeyCode.findOneMethod*/)
 	codeInfo := &code{
 		importsCode: importsCode,
 		varsCode:    varsCode,

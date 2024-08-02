@@ -5,7 +5,7 @@ import (
 	"strings"
 	{{if .time}}"time"{{end}}
 
-    "github.com/heshiyingx/gotool/dbext/gormdb"
+    "github.com/heshiyingx/gotool/dbext/gormdb/v2"
     "gorm.io/gorm"
 
 	{{.third}}

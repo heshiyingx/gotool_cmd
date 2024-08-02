@@ -1,10 +1,10 @@
 package gen
 
 import (
-	"github.com/heshiyingx/gotool/dbext/sql/template"
 	"github.com/heshiyingx/gotool/util"
 	"github.com/heshiyingx/gotool/util/pathext"
 	stringx "github.com/heshiyingx/gotool/util/stringext"
+	"github.com/heshiyingx/gotool_cmd/internal/ddl/sql/template"
 )
 
 func genTypes(table Table, methods string, withCache bool) (string, error) {

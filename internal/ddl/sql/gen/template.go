@@ -1,6 +1,6 @@
 package gen
 
-import "github.com/heshiyingx/gotool/dbext/sql/template"
+import "github.com/heshiyingx/gotool_cmd/internal/ddl/sql/template"
 
 const (
 	category                              = "model"
@@ -14,6 +14,7 @@ const (
 	findOneByFieldMethodTemplateFile      = "interface-find-one-by-field.tpl"
 	findOneByFieldExtraMethodTemplateFile = "find-one-by-field-extra-method.tpl"
 	importsTemplateFile                   = "import.tpl"
+	defaultDbModelTemplateFile            = "default-model.tpl"
 	importsWithNoCacheTemplateFile        = "import-no-cache.tpl"
 	insertTemplateFile                    = "insert.tpl"
 	insertTemplateMethodFile              = "interface-insert.tpl"

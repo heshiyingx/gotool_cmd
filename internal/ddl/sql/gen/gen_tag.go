@@ -1,9 +1,9 @@
 package gen
 
 import (
-	"github.com/heshiyingx/gotool/dbext/sql/template"
 	"github.com/heshiyingx/gotool/util"
 	"github.com/heshiyingx/gotool/util/pathext"
+	"github.com/heshiyingx/gotool_cmd/internal/ddl/sql/template"
 )
 
 func genTag(table Table, in string) (string, error) {

@@ -1,11 +1,11 @@
 package gen
 
 import (
-	"github.com/heshiyingx/gotool/dbext/sql/parser"
-	"github.com/heshiyingx/gotool/dbext/sql/template"
 	"github.com/heshiyingx/gotool/util"
 	"github.com/heshiyingx/gotool/util/pathext"
 	stringx "github.com/heshiyingx/gotool/util/stringext"
+	"github.com/heshiyingx/gotool_cmd/internal/ddl/sql/parser"
+	"github.com/heshiyingx/gotool_cmd/internal/ddl/sql/template"
 )
 
 func genModelCustom(in parser.Table, withCache bool, pkg string) (string, error) {

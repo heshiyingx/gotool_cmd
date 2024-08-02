@@ -1,11 +1,11 @@
 package gen
 
 import (
-	"github.com/heshiyingx/gotool/dbext/sql/template"
 	"github.com/heshiyingx/gotool/util"
 	"github.com/heshiyingx/gotool/util/collection"
 	"github.com/heshiyingx/gotool/util/pathext"
 	stringx "github.com/heshiyingx/gotool/util/stringext"
+	"github.com/heshiyingx/gotool_cmd/internal/ddl/sql/template"
 	"sort"
 	"strings"
 )
@@ -64,9 +64,11 @@ func genUpdateByPK(table Table, withCache bool) (
 			"primaryCacheKey":           table.PrimaryCacheKey.DataKeyExpression,
 			"lowerStartCamelPrimaryKey": util.EscapeGolangKeyword(stringx.From(table.PrimaryKey.Fields[0].Name.ToCamel()).Untitle()),
 			"dataType":                  table.PrimaryKey.Fields[0].DataType,
-			"primaryKeyVariable":        table.PrimaryCacheKey.KeyLeft,
+			"pkCacheKey":                table.PrimaryCacheKey.KeyLeft,
 			"titlePrimaryKey":           table.PrimaryKey.Fields[0].Name.Title(),
 			"lowerStartCamelObject":     stringx.From(camelTableName).Untitle(),
+			"keysLen":                   len(keys),
+			"uniqueKeysLen":             len(table.UniqueCacheKey),
 			"upperStartCamelPrimaryKey": util.EscapeGolangKeyword(
 				stringx.From(table.PrimaryKey.Fields[0].Name.ToCamel()).Title(),
 			),

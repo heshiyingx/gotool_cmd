@@ -1,37 +1,32 @@
 package gen
 
 import (
-	"fmt"
 	"github.com/heshiyingx/gotool/util"
 	"github.com/heshiyingx/gotool/util/pathext"
+	stringx "github.com/heshiyingx/gotool/util/stringext"
+	"github.com/heshiyingx/gotool_cmd/internal/ddl/sql/parser"
 	"github.com/heshiyingx/gotool_cmd/internal/ddl/sql/template"
+
 	goformat "go/format"
 	"strings"
 )
 
-func genImports(table Table, withCache, timeImport bool) (string, error) {
-	var thirdImports []string
-	var m = map[string]struct{}{}
-	for _, c := range table.Fields {
-		if len(c.ThirdPkg) > 0 {
-			if _, ok := m[c.ThirdPkg]; ok {
-				continue
-			}
-			m[c.ThirdPkg] = struct{}{}
-			thirdImports = append(thirdImports, fmt.Sprintf("%q", c.ThirdPkg))
-		}
+func genDefaultDBModel(tables []*parser.Table, withCache bool, pkg string) (string, error) {
+	pkType := tables[0].PrimaryKey.Fields[0].DataType
+	modelInterfaceName := make([]string, 0, len(tables))
+	for _, e := range tables {
+		modelInterfaceName = append(modelInterfaceName, stringx.From(e.Name.ToCamel()).Untitle()+"Model")
 	}
-
 	if withCache {
-		text, err := pathext.LoadTemplate(category, importsTemplateFile, template.Imports)
+		text, err := pathext.LoadTemplate(category, defaultDbModelTemplateFile, template.DefaultModel)
 		if err != nil {
 			return "", err
 		}
 
 		buffer, err := util.With("import").Parse(text).Execute(map[string]any{
-			"time":  timeImport,
-			"data":  table,
-			"third": strings.Join(thirdImports, "\n"),
+			"subModelInterface": strings.Join(modelInterfaceName, "\n"),
+			"pkType":            pkType,
+			"pkg":               pkg,
 		})
 		if err != nil {
 			return "", err
@@ -50,9 +45,9 @@ func genImports(table Table, withCache, timeImport bool) (string, error) {
 	}
 
 	buffer, err := util.With("import").Parse(text).Execute(map[string]any{
-		"time":  timeImport,
-		"data":  table,
-		"third": strings.Join(thirdImports, "\n"),
+		"subModelInterface": strings.Join(modelInterfaceName, "\n"),
+		"pkType":            pkType,
+		"pkg":               pkg,
 	})
 	if err != nil {
 		return "", err

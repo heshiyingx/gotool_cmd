@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/heshiyingx/gotool/dbext/gormdb"
+	"github.com/heshiyingx/gotool/dbext/gormdb/v2"
 	"gorm.io/gorm"
 )
 
@@ -22,17 +22,10 @@ var (
 
 type (
 	nutritionStoreModel interface {
-		Insert(ctx context.Context, data *NutritionStore, delCacheKeys ...string) (int64, error)
-		FindById(ctx context.Context, id int64) (*NutritionStore, error)
-		UpdateById(ctx context.Context, id int64, updateObj *NutritionStore, delCacheKeys []string, fields ...string) (int64, error)
-		DeleteById(ctx context.Context, id int64, delCacheKeys ...string) (int64, error)
-		FindOneByUserId(ctx context.Context, userId int64) (*NutritionStore, error)
-		DeleteOneByUserId(ctx context.Context, userId int64, delCacheKeys ...string) (int64, error)
-		UpdateOneByUserId(ctx context.Context, userId int64, updateObj *NutritionStore, delCacheKeys []string, fields ...string) (int64, error)
-	}
-
-	defaultNutritionStoreModel struct {
-		db *gormdb.CacheGormDB[NutritionStore, int64]
+		NutritionStoreInsert(ctx context.Context, data *NutritionStore, delCacheKeys ...string) (int64, error)
+		NutritionStoreFindById(ctx context.Context, id int64) (*NutritionStore, error)
+		NutritionStoreUpdateById(ctx context.Context, id int64, updateObj *NutritionStore, delCacheKeys []string, fields ...string) (int64, error)
+		NutritionStoreDeleteById(ctx context.Context, id int64, delCacheKeys ...string) (int64, error)
 	}
 
 	NutritionStore struct {
@@ -44,34 +37,27 @@ type (
 	}
 )
 
-func newDefaultNutritionStoreModel(config gormdb.Config) *defaultNutritionStoreModel {
-
-	cacheGormDB := gormdb.MustNewCacheGormDB[NutritionStore, int64](config)
-	return &defaultNutritionStoreModel{
-		db: cacheGormDB,
-	}
-
-}
-
-func (m *defaultNutritionStoreModel) Insert(ctx context.Context, data *NutritionStore, delCacheKeys ...string) (int64, error) {
+func (m *defaultModel) NutritionStoreInsert(ctx context.Context, data *NutritionStore, delCacheKeys ...string) (int64, error) {
 	nutritionStoreUserIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreUserIdPrefix, data.UserId)
 	afterDel := true
-	cacheKeys := make([]string, 0, 2)
-	cacheKeys = []string{nutritionStoreUserIdKey}
+
+	delCacheAllKeys := make([]string, 0, 2+len(delCacheKeys))
+	delCacheAllKeys = append(delCacheAllKeys, nutritionStoreUserIdKey)
+
 	if len(delCacheKeys) > 0 {
-		cacheKeys = append(cacheKeys, delCacheKeys...)
+		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
 	}
 
 	if data.Id != 0 {
 		afterDel = false
 		nutritionStoreIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreIdPrefix, data.Id)
-		cacheKeys = append(cacheKeys, nutritionStoreIdKey)
+		delCacheAllKeys = append(delCacheAllKeys, nutritionStoreIdKey)
 	}
 
 	result, err := m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
 		res := db.WithContext(ctx).Model(&NutritionStore{}).Create(data)
 		return res.RowsAffected, res.Error
-	}, cacheKeys...)
+	}, delCacheAllKeys...)
 
 	if err != nil {
 		return 0, err
@@ -79,7 +65,7 @@ func (m *defaultNutritionStoreModel) Insert(ctx context.Context, data *Nutrition
 
 	if afterDel {
 		nutritionStoreIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreIdPrefix, data.Id)
-		err = m.db.DelCacheKeys(ctx, nutritionStoreIdKey)
+		err = m.db.DelCacheKeysAndDelay(ctx, nutritionStoreIdKey)
 		if err != nil {
 			return 0, err
 		}
@@ -88,31 +74,34 @@ func (m *defaultNutritionStoreModel) Insert(ctx context.Context, data *Nutrition
 
 }
 
-func (m *defaultNutritionStoreModel) FindById(ctx context.Context, id int64) (*NutritionStore, error) {
+func (m *defaultModel) NutritionStoreFindById(ctx context.Context, id int64) (*NutritionStore, error) {
 	nutritionStoreIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreIdPrefix, id)
 	var resp NutritionStore
-	err := m.db.QueryOneByPKCtx(ctx, &resp, nutritionStoreIdKey, func(ctx context.Context, r any, db *gorm.DB) error {
+	err := m.db.QueryByCtx(ctx, &resp, nutritionStoreIdKey, func(ctx context.Context, r any, db *gorm.DB) error {
 		return db.WithContext(ctx).Model(&NutritionStore{}).Where("`id`=?", id).Take(r).Error
 	})
 	return &resp, err
 
 }
 
-func (m *defaultNutritionStoreModel) UpdateById(ctx context.Context, id int64, updateObj *NutritionStore, delCacheKeys []string, fields ...string) (int64, error) {
+func (m *defaultModel) NutritionStoreUpdateById(ctx context.Context, id int64, updateObj *NutritionStore, delCacheKeys []string, fields ...string) (int64, error) {
 	if updateObj == nil {
 		return 0, nil
 	}
 
-	data, err := m.FindById(ctx, id)
+	data, err := m.NutritionStoreFindById(ctx, id)
 	if err != nil {
 		return 0, err
 	}
 	nutritionStoreIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreIdPrefix, data.Id)
 	nutritionStoreUserIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreUserIdPrefix, data.UserId)
 
-	delKeys := []string{nutritionStoreIdKey, nutritionStoreUserIdKey}
+	delCacheAllKeys := make([]string, 0, 2+len(delCacheKeys))
+
+	delCacheAllKeys = append(delCacheAllKeys, nutritionStoreIdKey)
+
 	if len(delCacheKeys) > 0 {
-		delKeys = append(delKeys, delCacheKeys...)
+		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
 	}
 
 	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
@@ -123,97 +112,33 @@ func (m *defaultNutritionStoreModel) UpdateById(ctx context.Context, id int64, u
 			upTx = upTx.Save(updateObj)
 		}
 		return upTx.RowsAffected, upTx.Error
-	}, delKeys...)
+	}, delCacheAllKeys...)
 
 }
 
-func (m *defaultNutritionStoreModel) DeleteById(ctx context.Context, id int64, delCacheKeys ...string) (int64, error) {
+func (m *defaultModel) NutritionStoreDeleteById(ctx context.Context, id int64, delCacheKeys ...string) (int64, error) {
 
-	data, err := m.FindById(ctx, id)
+	data, err := m.NutritionStoreFindById(ctx, id)
 	if err != nil {
 		return 0, err
 	}
 
 	nutritionStoreIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreIdPrefix, id)
 	nutritionStoreUserIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreUserIdPrefix, data.UserId)
-	delKeys := []string{nutritionStoreIdKey, nutritionStoreUserIdKey}
+
+	delCacheAllKeys := make([]string, 0, 2+len(delCacheKeys))
+
+	// 0
+	delCacheAllKeys = append(delCacheAllKeys, nutritionStoreIdKey, nutritionStoreIdKey, nutritionStoreUserIdKey)
+
 	if len(delCacheKeys) > 0 {
-		delKeys = append(delKeys, delCacheKeys...)
+		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
 	}
 
 	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
 		res := db.WithContext(ctx).Where("id = ?", id).Delete(&NutritionStore{})
 		return res.RowsAffected, res.Error
-	}, delKeys...)
-
-}
-
-func (m *defaultNutritionStoreModel) FindOneByUserId(ctx context.Context, userId int64) (*NutritionStore, error) {
-
-	nutritionStoreUserIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreUserIdPrefix, userId)
-
-	var Id int64
-	err := m.db.QueryToGetPKCtx(ctx, nutritionStoreUserIdKey, &Id, func(ctx context.Context, p *int64, db *gorm.DB) error {
-		return db.WithContext(ctx).Model(&NutritionStore{}).Select("`id`").Where("`user_id` = ?", userId).Take(p).Error
-	})
-	if err != nil {
-		return nil, err
-	}
-	nutritionStoreIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreIdPrefix, Id)
-	var resp NutritionStore
-	err = m.db.QueryOneByPKCtx(ctx, &resp, nutritionStoreIdKey, func(ctx context.Context, r any, db *gorm.DB) error {
-		return db.WithContext(ctx).Model(&NutritionStore{}).Where("`id` = ?", Id).Take(r).Error
-	})
-	return &resp, err
-
-}
-
-func (m *defaultNutritionStoreModel) UpdateOneByUserId(ctx context.Context, userId int64, updateObj *NutritionStore, delCacheKeys []string, fields ...string) (int64, error) {
-	if updateObj == nil {
-		return 0, nil
-	}
-
-	data, err := m.FindOneByUserId(ctx, userId)
-	if err != nil {
-		return 0, err
-	}
-	nutritionStoreIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreIdPrefix, data.Id)
-	nutritionStoreUserIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreUserIdPrefix, data.UserId)
-
-	delKeys := []string{nutritionStoreIdKey, nutritionStoreUserIdKey}
-	if len(delCacheKeys) > 0 {
-		delKeys = append(delKeys, delCacheKeys...)
-	}
-
-	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
-		upTx := db.WithContext(ctx).Model(&NutritionStore{}).Where("`id`", userId)
-		if len(fields) > 0 {
-			upTx = upTx.Select(strings.Join(fields, ",")).Updates(updateObj)
-		} else {
-			upTx = upTx.Save(updateObj)
-		}
-		return upTx.RowsAffected, upTx.Error
-	}, delKeys...)
-
-}
-func (m *defaultNutritionStoreModel) DeleteOneByUserId(ctx context.Context, userId int64, delCacheKeys ...string) (int64, error) {
-
-	data, err := m.FindOneByUserId(ctx, userId)
-	if err != nil {
-		return 0, err
-	}
-	nutritionStoreIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreIdPrefix, data.Id)
-	nutritionStoreUserIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreUserIdPrefix, data.UserId)
-
-	delKeys := []string{nutritionStoreIdKey, nutritionStoreUserIdKey}
-	if len(delCacheKeys) > 0 {
-		delKeys = append(delKeys, delCacheKeys...)
-	}
-
-	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
-		delTx := db.WithContext(ctx).Where("`id`", userId).Delete(&NutritionStore{})
-		return delTx.RowsAffected, delTx.Error
-	}, delKeys...)
+	}, delCacheAllKeys...)
 
 }
 

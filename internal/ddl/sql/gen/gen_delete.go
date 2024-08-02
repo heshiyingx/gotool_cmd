@@ -1,11 +1,11 @@
 package gen
 
 import (
-	"github.com/heshiyingx/gotool/dbext/sql/template"
 	"github.com/heshiyingx/gotool/util"
 	"github.com/heshiyingx/gotool/util/collection"
 	"github.com/heshiyingx/gotool/util/pathext"
 	stringx "github.com/heshiyingx/gotool/util/stringext"
+	"github.com/heshiyingx/gotool_cmd/internal/ddl/sql/template"
 	"sort"
 	"strings"
 )
@@ -40,9 +40,11 @@ func genDeleteByPK(table Table, withCache bool) (string, string, error) {
 			"titlePrimaryKey":           table.PrimaryKey.Fields[0].Name.Title(),
 			"dataType":                  table.PrimaryKey.Fields[0].DataType,
 			"keys":                      strings.Join(keys, "\n"),
-			"originalPrimaryKey":        wrapWithRawString(table.PrimaryKey.Fields[0].Name.Source()),
-			"cacheKeyStr":               strings.Join(keyVars, ", "),
-			"cacheKeys":                 keyVars,
+			"pkCacheKey":                table.PrimaryCacheKey.KeyLeft,
+			"uniqueCacheKeys":           keyVars,
+			"uniqueKeysLen":             len(table.UniqueCacheKey),
+			"keysLen":                   len(keys),
+			"cacheKeys":                 append(keyVars, wrapWithRawString(table.PrimaryKey.Fields[0].Name.Source())),
 			"data":                      table,
 		})
 	if err != nil {
@@ -62,6 +64,7 @@ func genDeleteByPK(table Table, withCache bool) (string, string, error) {
 			"dataType":                  table.PrimaryKey.Fields[0].DataType,
 			"data":                      table,
 			"titlePrimaryKey":           table.PrimaryKey.Fields[0].Name.Title(),
+			"upperStartCamelObject":     camel,
 		})
 	if err != nil {
 		return "", "", err

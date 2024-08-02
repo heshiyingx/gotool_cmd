@@ -2,9 +2,9 @@ package gen
 
 import (
 	"fmt"
-	"github.com/heshiyingx/gotool/dbext/sql/template"
 	"github.com/heshiyingx/gotool/util"
 	"github.com/heshiyingx/gotool/util/pathext"
+	"github.com/heshiyingx/gotool_cmd/internal/ddl/sql/template"
 )
 
 func genNew(table Table, withCache bool) (string, error) {

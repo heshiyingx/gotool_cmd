@@ -1,1 +1,1 @@
-Insert(ctx context.Context, data *{{.upperStartCamelObject}},delCacheKeys ...string) (int64, error)
+{{.upperStartCamelObject}}Insert(ctx context.Context, data *{{.upperStartCamelObject}},delCacheKeys ...string) (int64, error)

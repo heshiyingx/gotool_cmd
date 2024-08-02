@@ -1,7 +1,7 @@
 package gen
 
 import (
-	"github.com/heshiyingx/gotool/dbext/sql/parser"
+	"github.com/heshiyingx/gotool_cmd/internal/ddl/sql/parser"
 	"testing"
 )
 
