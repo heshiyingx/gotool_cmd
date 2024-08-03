@@ -30,6 +30,18 @@ func genUpdateByPK(table Table, withCache bool) (
 
 		expressionValues = append(expressionValues, pkg+camel)
 	}
+	allKeyExpressionSet := collection.NewSet[string]()
+	allKeyNameSet := collection.NewSet[string]()
+	allKeyNameSet.Add(table.PrimaryCacheKey.KeyLeft)
+	allKeyExpressionSet.Add(table.PrimaryCacheKey.DataKeyExpression)
+	for _, key := range table.UniqueCacheKey {
+		allKeyExpressionSet.Add(key.DataKeyExpression)
+		allKeyNameSet.Add(key.KeyLeft)
+	}
+	allCacheKeyName := allKeyNameSet.Elems()
+	sort.Strings(allCacheKeyName)
+	allCacheKeyExpression := allKeyExpressionSet.Elems()
+	sort.Strings(allCacheKeyExpression)
 
 	keySet := collection.NewSet[string]()
 	keyNamesSet := collection.NewSet[string]()
@@ -59,6 +71,9 @@ func genUpdateByPK(table Table, withCache bool) (
 			"withCache":                 withCache,
 			"containsIndexCache":        table.ContainsUniqueCacheKey,
 			"upperStartCamelObject":     camelTableName,
+			"allCacheKeyNames":          strings.Join(allCacheKeyName, ","),
+			"allCacheKeyCount":          len(allCacheKeyName),
+			"allCacheKeyExpression":     strings.Join(allCacheKeyExpression, "\n"),
 			"keys":                      strings.Join(keys, "\n"),
 			"keyNames":                  strings.Join(keyNames, ", "),
 			"primaryCacheKey":           table.PrimaryCacheKey.DataKeyExpression,

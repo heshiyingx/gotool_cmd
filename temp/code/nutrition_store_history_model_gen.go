@@ -17,6 +17,7 @@ import (
 
 var (
 	cacheNutritionStoreHistoryIdPrefix         = "cache:nutritionStoreHistory:id:"
+	cacheNutritionStoreHistoryClickIdPrefix    = "cache:nutritionStoreHistory:clickId:"
 	cacheNutritionStoreHistoryUserIdOpIdPrefix = "cache:nutritionStoreHistory:userId:opId:"
 )
 
@@ -26,6 +27,12 @@ type (
 		NutritionStoreHistoryFindById(ctx context.Context, id int64) (*NutritionStoreHistory, error)
 		NutritionStoreHistoryUpdateById(ctx context.Context, id int64, updateObj *NutritionStoreHistory, delCacheKeys []string, fields ...string) (int64, error)
 		NutritionStoreHistoryDeleteById(ctx context.Context, id int64, delCacheKeys ...string) (int64, error)
+		NutritionStoreHistoryFindOneByClickId(ctx context.Context, clickId string) (*NutritionStoreHistory, error)
+		NutritionStoreHistoryDeleteOneByClickId(ctx context.Context, clickId string, delCacheKeys ...string) (int64, error)
+		NutritionStoreHistoryUpdateOneByClickId(ctx context.Context, clickId string, updateObj *NutritionStoreHistory, delCacheKeys []string, fields ...string) (int64, error)
+		NutritionStoreHistoryFindOneByUserIdOpId(ctx context.Context, userId int64, opId string) (*NutritionStoreHistory, error)
+		NutritionStoreHistoryDeleteOneByUserIdOpId(ctx context.Context, userId int64, opId string, delCacheKeys ...string) (int64, error)
+		NutritionStoreHistoryUpdateOneByUserIdOpId(ctx context.Context, userId int64, opId string, updateObj *NutritionStoreHistory, delCacheKeys []string, fields ...string) (int64, error)
 	}
 
 	NutritionStoreHistory struct {
@@ -35,6 +42,7 @@ type (
 		OpType    int64      `db:"op_type" gorm:"column:op_type" json:"op_type,omitempty"`          // 操作类型,1:增加，2：减少
 		Value     int64      `db:"value" gorm:"column:value" json:"value,omitempty"`                // 改变的值
 		OpId      string     `db:"op_id" gorm:"column:op_id" json:"op_id,omitempty"`                // 操作id，用于去重
+		ClickId   string     `db:"click_id" gorm:"column:click_id" json:"click_id,omitempty"`       // 唯一ID
 		Comment   string     `db:"comment" gorm:"column:comment" json:"comment,omitempty"`          // 备注说明
 		CreatedAt *time.Time `db:"created_at" gorm:"column:created_at" json:"created_at,omitempty"` // 创建时间
 		UpdatedAt *time.Time `db:"updated_at" gorm:"column:updated_at" json:"updated_at,omitempty"` // 更新时间
@@ -42,11 +50,12 @@ type (
 )
 
 func (m *defaultModel) NutritionStoreHistoryInsert(ctx context.Context, data *NutritionStoreHistory, delCacheKeys ...string) (int64, error) {
+	nutritionStoreHistoryClickIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreHistoryClickIdPrefix, data.ClickId)
 	nutritionStoreHistoryUserIdOpIdKey := fmt.Sprintf("%s%v:%v", cacheNutritionStoreHistoryUserIdOpIdPrefix, data.UserId, data.OpId)
 	afterDel := true
 
-	delCacheAllKeys := make([]string, 0, 2+len(delCacheKeys))
-	delCacheAllKeys = append(delCacheAllKeys, nutritionStoreHistoryUserIdOpIdKey)
+	delCacheAllKeys := make([]string, 0, 3+len(delCacheKeys))
+	delCacheAllKeys = append(delCacheAllKeys, nutritionStoreHistoryClickIdKey, nutritionStoreHistoryUserIdOpIdKey)
 
 	if len(delCacheKeys) > 0 {
 		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
@@ -96,13 +105,12 @@ func (m *defaultModel) NutritionStoreHistoryUpdateById(ctx context.Context, id i
 	if err != nil {
 		return 0, err
 	}
+	nutritionStoreHistoryClickIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreHistoryClickIdPrefix, data.ClickId)
 	nutritionStoreHistoryIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreHistoryIdPrefix, data.Id)
 	nutritionStoreHistoryUserIdOpIdKey := fmt.Sprintf("%s%v:%v", cacheNutritionStoreHistoryUserIdOpIdPrefix, data.UserId, data.OpId)
 
-	delCacheAllKeys := make([]string, 0, 2+len(delCacheKeys))
-
-	delCacheAllKeys = append(delCacheAllKeys, nutritionStoreHistoryIdKey)
-
+	delCacheAllKeys := make([]string, 0, 3+len(delCacheKeys))
+	delCacheAllKeys = append(delCacheAllKeys, nutritionStoreHistoryClickIdKey, nutritionStoreHistoryIdKey, nutritionStoreHistoryUserIdOpIdKey)
 	if len(delCacheKeys) > 0 {
 		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
 	}
@@ -126,12 +134,13 @@ func (m *defaultModel) NutritionStoreHistoryDeleteById(ctx context.Context, id i
 		return 0, err
 	}
 
+	nutritionStoreHistoryClickIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreHistoryClickIdPrefix, data.ClickId)
 	nutritionStoreHistoryIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreHistoryIdPrefix, id)
 	nutritionStoreHistoryUserIdOpIdKey := fmt.Sprintf("%s%v:%v", cacheNutritionStoreHistoryUserIdOpIdPrefix, data.UserId, data.OpId)
 
-	delCacheAllKeys := make([]string, 0, 2+len(delCacheKeys))
+	delCacheAllKeys := make([]string, 0, 3+len(delCacheKeys))
 
-	delCacheAllKeys = append(delCacheAllKeys, nutritionStoreHistoryIdKey, nutritionStoreHistoryUserIdOpIdKey)
+	delCacheAllKeys = append(delCacheAllKeys, nutritionStoreHistoryClickIdKey, nutritionStoreHistoryIdKey, nutritionStoreHistoryUserIdOpIdKey)
 	if len(delCacheKeys) > 0 {
 		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
 	}
@@ -139,6 +148,149 @@ func (m *defaultModel) NutritionStoreHistoryDeleteById(ctx context.Context, id i
 	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
 		res := db.Where("`id` = ?", id).Delete(&NutritionStoreHistory{})
 		return res.RowsAffected, res.Error
+	}, delCacheAllKeys...)
+
+}
+
+func (m *defaultModel) NutritionStoreHistoryFindOneByClickId(ctx context.Context, clickId string) (*NutritionStoreHistory, error) {
+	nutritionStoreHistoryClickIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreHistoryClickIdPrefix, clickId)
+
+	var Id int64
+	err := m.db.QueryByCtx(ctx, &Id, nutritionStoreHistoryClickIdKey, func(ctx context.Context, p any, db *gorm.DB) error {
+		return db.Model(&NutritionStoreHistory{}).Select("`id`").Where("`click_id` = ?", clickId).Take(p).Error
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	nutritionStoreHistoryIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreHistoryIdPrefix, Id)
+	var resp NutritionStoreHistory
+	err = m.db.QueryByCtx(ctx, &resp, nutritionStoreHistoryIdKey, func(ctx context.Context, r any, db *gorm.DB) error {
+		return db.Model(&NutritionStoreHistory{}).Where("`id`= ?", Id).Take(r).Error
+	})
+	return &resp, err
+
+}
+
+func (m *defaultModel) NutritionStoreHistoryUpdateOneByClickId(ctx context.Context, clickId string, updateObj *NutritionStoreHistory, delCacheKeys []string, fields ...string) (int64, error) {
+	if updateObj == nil {
+		return 0, nil
+	}
+	data, err := m.NutritionStoreHistoryFindOneByClickId(ctx, clickId)
+	if err != nil {
+		return 0, err
+	}
+	nutritionStoreHistoryClickIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreHistoryClickIdPrefix, data.ClickId)
+	nutritionStoreHistoryIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreHistoryIdPrefix, data.Id)
+	nutritionStoreHistoryUserIdOpIdKey := fmt.Sprintf("%s%v:%v", cacheNutritionStoreHistoryUserIdOpIdPrefix, data.UserId, data.OpId)
+	delCacheAllKeys := make([]string, 0, 3+len(delCacheKeys))
+	delCacheAllKeys = append(delCacheAllKeys, nutritionStoreHistoryClickIdKey, nutritionStoreHistoryIdKey, nutritionStoreHistoryUserIdOpIdKey)
+	if len(delCacheKeys) > 0 {
+		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
+	}
+
+	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
+		upTx := db.Model(&NutritionStoreHistory{}).Where("`id`", clickId)
+		if len(fields) > 0 {
+			upTx = upTx.Select(strings.Join(fields, ",")).Updates(updateObj)
+		} else {
+			upTx = upTx.Save(updateObj)
+		}
+		return upTx.RowsAffected, upTx.Error
+	}, delCacheAllKeys...)
+
+}
+
+func (m *defaultModel) NutritionStoreHistoryDeleteOneByClickId(ctx context.Context, clickId string, delCacheKeys ...string) (int64, error) {
+
+	data, err := m.NutritionStoreHistoryFindOneByClickId(ctx, clickId)
+	if err != nil {
+		return 0, err
+	}
+	nutritionStoreHistoryClickIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreHistoryClickIdPrefix, data.ClickId)
+	nutritionStoreHistoryIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreHistoryIdPrefix, data.Id)
+	nutritionStoreHistoryUserIdOpIdKey := fmt.Sprintf("%s%v:%v", cacheNutritionStoreHistoryUserIdOpIdPrefix, data.UserId, data.OpId)
+
+	delCacheAllKeys := make([]string, 0, 3+len(delCacheKeys))
+	delCacheAllKeys = append(delCacheAllKeys, nutritionStoreHistoryClickIdKey, nutritionStoreHistoryIdKey, nutritionStoreHistoryUserIdOpIdKey)
+	if len(delCacheKeys) > 0 {
+		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
+	}
+
+	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
+		delTx := db.Where("`id`", clickId).Delete(&NutritionStoreHistory{})
+		return delTx.RowsAffected, delTx.Error
+	}, delCacheAllKeys...)
+
+}
+func (m *defaultModel) NutritionStoreHistoryFindOneByUserIdOpId(ctx context.Context, userId int64, opId string) (*NutritionStoreHistory, error) {
+	nutritionStoreHistoryUserIdOpIdKey := fmt.Sprintf("%s%v:%v", cacheNutritionStoreHistoryUserIdOpIdPrefix, userId, opId)
+
+	var Id int64
+	err := m.db.QueryByCtx(ctx, &Id, nutritionStoreHistoryUserIdOpIdKey, func(ctx context.Context, p any, db *gorm.DB) error {
+		return db.Model(&NutritionStoreHistory{}).Select("`id`").Where("`user_id` = ? and `op_id` = ?", userId, opId).Take(p).Error
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	nutritionStoreHistoryIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreHistoryIdPrefix, Id)
+	var resp NutritionStoreHistory
+	err = m.db.QueryByCtx(ctx, &resp, nutritionStoreHistoryIdKey, func(ctx context.Context, r any, db *gorm.DB) error {
+		return db.Model(&NutritionStoreHistory{}).Where("`id`= ?", Id).Take(r).Error
+	})
+	return &resp, err
+
+}
+
+func (m *defaultModel) NutritionStoreHistoryUpdateOneByUserIdOpId(ctx context.Context, userId int64, opId string, updateObj *NutritionStoreHistory, delCacheKeys []string, fields ...string) (int64, error) {
+	if updateObj == nil {
+		return 0, nil
+	}
+	data, err := m.NutritionStoreHistoryFindOneByUserIdOpId(ctx, userId, opId)
+	if err != nil {
+		return 0, err
+	}
+	nutritionStoreHistoryClickIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreHistoryClickIdPrefix, data.ClickId)
+	nutritionStoreHistoryIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreHistoryIdPrefix, data.Id)
+	nutritionStoreHistoryUserIdOpIdKey := fmt.Sprintf("%s%v:%v", cacheNutritionStoreHistoryUserIdOpIdPrefix, data.UserId, data.OpId)
+	delCacheAllKeys := make([]string, 0, 3+len(delCacheKeys))
+	delCacheAllKeys = append(delCacheAllKeys, nutritionStoreHistoryClickIdKey, nutritionStoreHistoryIdKey, nutritionStoreHistoryUserIdOpIdKey)
+	if len(delCacheKeys) > 0 {
+		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
+	}
+
+	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
+		upTx := db.Model(&NutritionStoreHistory{}).Where("`id`", userId, opId)
+		if len(fields) > 0 {
+			upTx = upTx.Select(strings.Join(fields, ",")).Updates(updateObj)
+		} else {
+			upTx = upTx.Save(updateObj)
+		}
+		return upTx.RowsAffected, upTx.Error
+	}, delCacheAllKeys...)
+
+}
+
+func (m *defaultModel) NutritionStoreHistoryDeleteOneByUserIdOpId(ctx context.Context, userId int64, opId string, delCacheKeys ...string) (int64, error) {
+
+	data, err := m.NutritionStoreHistoryFindOneByUserIdOpId(ctx, userId, opId)
+	if err != nil {
+		return 0, err
+	}
+	nutritionStoreHistoryClickIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreHistoryClickIdPrefix, data.ClickId)
+	nutritionStoreHistoryIdKey := fmt.Sprintf("%s%v", cacheNutritionStoreHistoryIdPrefix, data.Id)
+	nutritionStoreHistoryUserIdOpIdKey := fmt.Sprintf("%s%v:%v", cacheNutritionStoreHistoryUserIdOpIdPrefix, data.UserId, data.OpId)
+
+	delCacheAllKeys := make([]string, 0, 3+len(delCacheKeys))
+	delCacheAllKeys = append(delCacheAllKeys, nutritionStoreHistoryClickIdKey, nutritionStoreHistoryIdKey, nutritionStoreHistoryUserIdOpIdKey)
+	if len(delCacheKeys) > 0 {
+		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
+	}
+
+	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
+		delTx := db.Where("`id`", userId, opId).Delete(&NutritionStoreHistory{})
+		return delTx.RowsAffected, delTx.Error
 	}, delCacheAllKeys...)
 
 }

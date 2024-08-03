@@ -3,7 +3,7 @@ func (m *defaultModel) {{.upperStartCamelObject}}Insert(ctx context.Context, dat
 		afterDel := true
 
 		delCacheAllKeys := make([]string, 0, {{.keysLen}}+len(delCacheKeys))
-		{{ if gt .uniqueKeysLen 0}}delCacheAllKeys = append(delCacheAllKeys, {{- range $i,$key :=.uniqueCacheKeys }}{{ if gt $i 1 }},{{end}}{{$key}}{{- end}}){{end}}
+		{{ if gt .uniqueKeysLen 0}}delCacheAllKeys = append(delCacheAllKeys, {{- range $i,$key :=.uniqueCacheKeys }}{{ if gt $i 0 }},{{end}}{{$key}}{{- end}}){{end}}
 
 		if len(delCacheKeys) > 0 {
 			delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)

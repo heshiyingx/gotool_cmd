@@ -271,12 +271,12 @@ func (g *defaultGenerator) genModel(in parser.Table, withCache bool) (string, st
 	if err != nil {
 		return "", "", err
 	}
-	//uniqueKeyCode, err := genFindAndUpdateOneByUniqueKey(table, withCache)
-	//if err != nil {
-	//	return "", "", err
-	//}
+	uniqueKeyCode, err := genFindAndUpdateOneByUniqueKey(table, withCache)
+	if err != nil {
+		return "", "", err
+	}
 	var list []string
-	list = append(list, insertCodeInterface, findByPKInterface, updateByPKInterface, deleteInterface /*, uniqueKeyCode.findOneInterfaceMethod*/)
+	list = append(list, insertCodeInterface, findByPKInterface, updateByPKInterface, deleteInterface, uniqueKeyCode.findOneInterfaceMethod)
 	typesCode, err := genTypes(table, strings.Join(list, "\n"), withCache)
 	if err != nil {
 		return "", "", err
@@ -293,7 +293,7 @@ func (g *defaultGenerator) genModel(in parser.Table, withCache bool) (string, st
 	if err != nil {
 		return "", "", err
 	}
-	dbModelOpCode = append(dbModelOpCode, insertCode, findByPKCode, updateByPKCode, deleteCode /*uniqueKeyCode.findOneMethod*/)
+	dbModelOpCode = append(dbModelOpCode, insertCode, findByPKCode, updateByPKCode, deleteCode, uniqueKeyCode.findOneMethod)
 	codeInfo := &code{
 		importsCode: importsCode,
 		varsCode:    varsCode,

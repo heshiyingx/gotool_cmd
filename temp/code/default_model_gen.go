@@ -9,11 +9,7 @@ type defaultModel struct {
 }
 
 type DBModel interface {
-	feedStoreModel
-	feedStoreHistoryModel
-	nutritionStoreModel
 	nutritionStoreHistoryModel
-	chickenModel
 }
 
 func NewDBModel(config gormdb.Config) DBModel {
