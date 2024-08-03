@@ -26,6 +26,9 @@ type (
 		FeedStoreFindById(ctx context.Context, id int64) (*FeedStore, error)
 		FeedStoreUpdateById(ctx context.Context, id int64, updateObj *FeedStore, delCacheKeys []string, fields ...string) (int64, error)
 		FeedStoreDeleteById(ctx context.Context, id int64, delCacheKeys ...string) (int64, error)
+		FeedStoreFindOneByUserId(ctx context.Context, userId int64) (*FeedStore, error)
+		FeedStoreDeleteOneByUserId(ctx context.Context, userId int64, delCacheKeys ...string) (int64, error)
+		FeedStoreUpdateOneByUserId(ctx context.Context, userId int64, updateObj *FeedStore, delCacheKeys []string, fields ...string) (int64, error)
 	}
 
 	FeedStore struct {
@@ -96,9 +99,7 @@ func (m *defaultModel) FeedStoreUpdateById(ctx context.Context, id int64, update
 	feedStoreUserIdKey := fmt.Sprintf("%s%v", cacheFeedStoreUserIdPrefix, data.UserId)
 
 	delCacheAllKeys := make([]string, 0, 2+len(delCacheKeys))
-
-	delCacheAllKeys = append(delCacheAllKeys, feedStoreIdKey)
-
+	delCacheAllKeys = append(delCacheAllKeys, feedStoreIdKey, feedStoreUserIdKey)
 	if len(delCacheKeys) > 0 {
 		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
 	}
@@ -135,6 +136,76 @@ func (m *defaultModel) FeedStoreDeleteById(ctx context.Context, id int64, delCac
 	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
 		res := db.Where("`id` = ?", id).Delete(&FeedStore{})
 		return res.RowsAffected, res.Error
+	}, delCacheAllKeys...)
+
+}
+
+func (m *defaultModel) FeedStoreFindOneByUserId(ctx context.Context, userId int64) (*FeedStore, error) {
+	feedStoreUserIdKey := fmt.Sprintf("%s%v", cacheFeedStoreUserIdPrefix, userId)
+
+	var Id int64
+	err := m.db.QueryByCtx(ctx, &Id, feedStoreUserIdKey, func(ctx context.Context, p any, db *gorm.DB) error {
+		return db.Model(&FeedStore{}).Select("`id`").Where("`user_id` = ?", userId).Take(p).Error
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	feedStoreIdKey := fmt.Sprintf("%s%v", cacheFeedStoreIdPrefix, Id)
+	var resp FeedStore
+	err = m.db.QueryByCtx(ctx, &resp, feedStoreIdKey, func(ctx context.Context, r any, db *gorm.DB) error {
+		return db.Model(&FeedStore{}).Where("`id`= ?", Id).Take(r).Error
+	})
+	return &resp, err
+
+}
+
+func (m *defaultModel) FeedStoreUpdateOneByUserId(ctx context.Context, userId int64, updateObj *FeedStore, delCacheKeys []string, fields ...string) (int64, error) {
+	if updateObj == nil {
+		return 0, nil
+	}
+	data, err := m.FeedStoreFindOneByUserId(ctx, userId)
+	if err != nil {
+		return 0, err
+	}
+	feedStoreIdKey := fmt.Sprintf("%s%v", cacheFeedStoreIdPrefix, data.Id)
+	feedStoreUserIdKey := fmt.Sprintf("%s%v", cacheFeedStoreUserIdPrefix, data.UserId)
+	delCacheAllKeys := make([]string, 0, 2+len(delCacheKeys))
+	delCacheAllKeys = append(delCacheAllKeys, feedStoreIdKey, feedStoreUserIdKey)
+	if len(delCacheKeys) > 0 {
+		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
+	}
+
+	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
+		upTx := db.Model(&FeedStore{}).Where("`id`", userId)
+		if len(fields) > 0 {
+			upTx = upTx.Select(strings.Join(fields, ",")).Updates(updateObj)
+		} else {
+			upTx = upTx.Save(updateObj)
+		}
+		return upTx.RowsAffected, upTx.Error
+	}, delCacheAllKeys...)
+
+}
+
+func (m *defaultModel) FeedStoreDeleteOneByUserId(ctx context.Context, userId int64, delCacheKeys ...string) (int64, error) {
+
+	data, err := m.FeedStoreFindOneByUserId(ctx, userId)
+	if err != nil {
+		return 0, err
+	}
+	feedStoreIdKey := fmt.Sprintf("%s%v", cacheFeedStoreIdPrefix, data.Id)
+	feedStoreUserIdKey := fmt.Sprintf("%s%v", cacheFeedStoreUserIdPrefix, data.UserId)
+
+	delCacheAllKeys := make([]string, 0, 2+len(delCacheKeys))
+	delCacheAllKeys = append(delCacheAllKeys, feedStoreIdKey, feedStoreUserIdKey)
+	if len(delCacheKeys) > 0 {
+		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
+	}
+
+	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
+		delTx := db.Where("`id`", userId).Delete(&FeedStore{})
+		return delTx.RowsAffected, delTx.Error
 	}, delCacheAllKeys...)
 
 }

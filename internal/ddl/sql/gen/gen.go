@@ -180,7 +180,7 @@ func (g *defaultGenerator) createFile(modelList map[string]*codeTuple, defaultMo
 			return err
 		}
 
-		name := util.SafeString(modelFilename) + "_gen.go"
+		name := "gen_" + util.SafeString(modelFilename) + ".go"
 		filename := filepath.Join(dirAbs, name)
 		err = os.WriteFile(filename, []byte(codes.modelCode), os.ModePerm)
 		if err != nil {
@@ -199,11 +199,11 @@ func (g *defaultGenerator) createFile(modelList map[string]*codeTuple, defaultMo
 		}
 	}
 	modelFilename, err := format.FileNamingFormat(g.cfg.NamingFormat,
-		"default_model")
+		"_default_model")
 	if err != nil {
 		return err
 	}
-	name := util.SafeString(modelFilename) + "_gen.go"
+	name := "aa_" + util.SafeString(modelFilename) + ".go"
 	defaultModelFilename := filepath.Join(dirAbs, name)
 	err = os.WriteFile(defaultModelFilename, []byte(defaultModelCode), os.ModePerm)
 	if err != nil {

@@ -3,7 +3,6 @@ package gen
 import (
 	"github.com/heshiyingx/gotool/util"
 	"github.com/heshiyingx/gotool/util/pathext"
-	stringx "github.com/heshiyingx/gotool/util/stringext"
 	"github.com/heshiyingx/gotool_cmd/internal/ddl/sql/parser"
 	"github.com/heshiyingx/gotool_cmd/internal/ddl/sql/template"
 
@@ -15,7 +14,7 @@ func genDefaultDBModel(tables []*parser.Table, withCache bool, pkg string) (stri
 	pkType := tables[0].PrimaryKey.Fields[0].DataType
 	modelInterfaceName := make([]string, 0, len(tables))
 	for _, e := range tables {
-		modelInterfaceName = append(modelInterfaceName, stringx.From(e.Name.ToCamel()).Untitle()+"Model")
+		modelInterfaceName = append(modelInterfaceName, e.Name.ToCamel()+"DBInterface")
 	}
 	if withCache {
 		text, err := pathext.LoadTemplate(category, defaultDbModelTemplateFile, template.DefaultModel)

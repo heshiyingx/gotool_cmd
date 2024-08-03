@@ -26,6 +26,9 @@ type (
 		FeedStoreHistoryFindById(ctx context.Context, id int64) (*FeedStoreHistory, error)
 		FeedStoreHistoryUpdateById(ctx context.Context, id int64, updateObj *FeedStoreHistory, delCacheKeys []string, fields ...string) (int64, error)
 		FeedStoreHistoryDeleteById(ctx context.Context, id int64, delCacheKeys ...string) (int64, error)
+		FeedStoreHistoryFindOneByUserIdOpId(ctx context.Context, userId int64, opId string) (*FeedStoreHistory, error)
+		FeedStoreHistoryDeleteOneByUserIdOpId(ctx context.Context, userId int64, opId string, delCacheKeys ...string) (int64, error)
+		FeedStoreHistoryUpdateOneByUserIdOpId(ctx context.Context, userId int64, opId string, updateObj *FeedStoreHistory, delCacheKeys []string, fields ...string) (int64, error)
 	}
 
 	FeedStoreHistory struct {
@@ -100,9 +103,7 @@ func (m *defaultModel) FeedStoreHistoryUpdateById(ctx context.Context, id int64,
 	feedStoreHistoryUserIdOpIdKey := fmt.Sprintf("%s%v:%v", cacheFeedStoreHistoryUserIdOpIdPrefix, data.UserId, data.OpId)
 
 	delCacheAllKeys := make([]string, 0, 2+len(delCacheKeys))
-
-	delCacheAllKeys = append(delCacheAllKeys, feedStoreHistoryIdKey)
-
+	delCacheAllKeys = append(delCacheAllKeys, feedStoreHistoryIdKey, feedStoreHistoryUserIdOpIdKey)
 	if len(delCacheKeys) > 0 {
 		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
 	}
@@ -139,6 +140,76 @@ func (m *defaultModel) FeedStoreHistoryDeleteById(ctx context.Context, id int64,
 	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
 		res := db.Where("`id` = ?", id).Delete(&FeedStoreHistory{})
 		return res.RowsAffected, res.Error
+	}, delCacheAllKeys...)
+
+}
+
+func (m *defaultModel) FeedStoreHistoryFindOneByUserIdOpId(ctx context.Context, userId int64, opId string) (*FeedStoreHistory, error) {
+	feedStoreHistoryUserIdOpIdKey := fmt.Sprintf("%s%v:%v", cacheFeedStoreHistoryUserIdOpIdPrefix, userId, opId)
+
+	var Id int64
+	err := m.db.QueryByCtx(ctx, &Id, feedStoreHistoryUserIdOpIdKey, func(ctx context.Context, p any, db *gorm.DB) error {
+		return db.Model(&FeedStoreHistory{}).Select("`id`").Where("`user_id` = ? and `op_id` = ?", userId, opId).Take(p).Error
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	feedStoreHistoryIdKey := fmt.Sprintf("%s%v", cacheFeedStoreHistoryIdPrefix, Id)
+	var resp FeedStoreHistory
+	err = m.db.QueryByCtx(ctx, &resp, feedStoreHistoryIdKey, func(ctx context.Context, r any, db *gorm.DB) error {
+		return db.Model(&FeedStoreHistory{}).Where("`id`= ?", Id).Take(r).Error
+	})
+	return &resp, err
+
+}
+
+func (m *defaultModel) FeedStoreHistoryUpdateOneByUserIdOpId(ctx context.Context, userId int64, opId string, updateObj *FeedStoreHistory, delCacheKeys []string, fields ...string) (int64, error) {
+	if updateObj == nil {
+		return 0, nil
+	}
+	data, err := m.FeedStoreHistoryFindOneByUserIdOpId(ctx, userId, opId)
+	if err != nil {
+		return 0, err
+	}
+	feedStoreHistoryIdKey := fmt.Sprintf("%s%v", cacheFeedStoreHistoryIdPrefix, data.Id)
+	feedStoreHistoryUserIdOpIdKey := fmt.Sprintf("%s%v:%v", cacheFeedStoreHistoryUserIdOpIdPrefix, data.UserId, data.OpId)
+	delCacheAllKeys := make([]string, 0, 2+len(delCacheKeys))
+	delCacheAllKeys = append(delCacheAllKeys, feedStoreHistoryIdKey, feedStoreHistoryUserIdOpIdKey)
+	if len(delCacheKeys) > 0 {
+		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
+	}
+
+	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
+		upTx := db.Model(&FeedStoreHistory{}).Where("`id`", userId, opId)
+		if len(fields) > 0 {
+			upTx = upTx.Select(strings.Join(fields, ",")).Updates(updateObj)
+		} else {
+			upTx = upTx.Save(updateObj)
+		}
+		return upTx.RowsAffected, upTx.Error
+	}, delCacheAllKeys...)
+
+}
+
+func (m *defaultModel) FeedStoreHistoryDeleteOneByUserIdOpId(ctx context.Context, userId int64, opId string, delCacheKeys ...string) (int64, error) {
+
+	data, err := m.FeedStoreHistoryFindOneByUserIdOpId(ctx, userId, opId)
+	if err != nil {
+		return 0, err
+	}
+	feedStoreHistoryIdKey := fmt.Sprintf("%s%v", cacheFeedStoreHistoryIdPrefix, data.Id)
+	feedStoreHistoryUserIdOpIdKey := fmt.Sprintf("%s%v:%v", cacheFeedStoreHistoryUserIdOpIdPrefix, data.UserId, data.OpId)
+
+	delCacheAllKeys := make([]string, 0, 2+len(delCacheKeys))
+	delCacheAllKeys = append(delCacheAllKeys, feedStoreHistoryIdKey, feedStoreHistoryUserIdOpIdKey)
+	if len(delCacheKeys) > 0 {
+		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
+	}
+
+	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
+		delTx := db.Where("`id`", userId, opId).Delete(&FeedStoreHistory{})
+		return delTx.RowsAffected, delTx.Error
 	}, delCacheAllKeys...)
 
 }

@@ -1,13 +1,4 @@
 package {{.pkg}}
-{{if .withCache}}
-import (
-	"github.com/heshiyingx/gotool/dbext/gormdb"
-)
-{{else}}
-import (
-	 "github.com/heshiyingx/gotool/dbext/gormdb"
-)
-{{end}}
 
 
 type (
@@ -20,8 +11,3 @@ type (
 
 )
 
-
-
-{{if not .withCache}}
-
-{{end}}

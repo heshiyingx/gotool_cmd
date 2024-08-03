@@ -103,9 +103,7 @@ func (m *defaultModel) ChickenUpdateById(ctx context.Context, id int64, updateOb
 	chickenIdKey := fmt.Sprintf("%s%v", cacheChickenIdPrefix, data.Id)
 
 	delCacheAllKeys := make([]string, 0, 1+len(delCacheKeys))
-
 	delCacheAllKeys = append(delCacheAllKeys, chickenIdKey)
-
 	if len(delCacheKeys) > 0 {
 		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
 	}
