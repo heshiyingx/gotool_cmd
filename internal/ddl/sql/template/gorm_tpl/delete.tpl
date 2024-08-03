@@ -10,14 +10,13 @@ func (m *defaultModel) {{.upperStartCamelObject}}DeleteBy{{.titlePrimaryKey}}(ct
         {{.allCacheKeyExpressStr}}
 
         delCacheAllKeys := make([]string, 0, {{.allCacheKeyCount}}+len(delCacheKeys))
-
+        
 		delCacheAllKeys = append(delCacheAllKeys,{{.allCacheKeyNameStr}})
-
 		if len(delCacheKeys) > 0 { delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...) }
 
 
         return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
-            res := db.Where("{{.lowerStartCamelPrimaryKey}} = ?", {{.lowerStartCamelPrimaryKey}}).Delete(&{{.upperStartCamelObject}}{})
+            res := db.Where("{{.originalPrimaryKey}} = ?", {{.lowerStartCamelPrimaryKey}}).Delete(&{{.upperStartCamelObject}}{})
             return res.RowsAffected, res.Error
 		}, delCacheAllKeys...)
 
@@ -25,7 +24,7 @@ func (m *defaultModel) {{.upperStartCamelObject}}DeleteBy{{.titlePrimaryKey}}(ct
 {{else}}
  func (m *defaultModel) {{.upperStartCamelObject}}DeleteBy{{.titlePrimaryKey}}(ctx context.Context, {{.lowerStartCamelPrimaryKey}} {{.primaryKeyType}},delCacheKeys ...string) (int64, error) {
     return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
-    res := db.Where("{{.lowerStartCamelPrimaryKey}} = ?", {{.lowerStartCamelPrimaryKey}}).Delete(&{{.upperStartCamelObject}}{})
+    res := db.Where("{{.originalPrimaryKey}} = ?", {{.lowerStartCamelPrimaryKey}}).Delete(&{{.upperStartCamelObject}}{})
     return res.RowsAffected, res.Error
     })
 }

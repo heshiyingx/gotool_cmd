@@ -81,7 +81,6 @@ func (m *defaultModel) FeedStoreFindById(ctx context.Context, id int64) (*FeedSt
 		return db.WithContext(ctx).Model(&FeedStore{}).Where("`id`=?", id).Take(r).Error
 	})
 	return &resp, err
-
 }
 
 func (m *defaultModel) FeedStoreUpdateById(ctx context.Context, id int64, updateObj *FeedStore, delCacheKeys []string, fields ...string) (int64, error) {
@@ -129,13 +128,12 @@ func (m *defaultModel) FeedStoreDeleteById(ctx context.Context, id int64, delCac
 	delCacheAllKeys := make([]string, 0, 2+len(delCacheKeys))
 
 	delCacheAllKeys = append(delCacheAllKeys, feedStoreIdKey, feedStoreUserIdKey)
-
 	if len(delCacheKeys) > 0 {
 		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
 	}
 
 	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
-		res := db.Where("id = ?", id).Delete(&FeedStore{})
+		res := db.Where("`id` = ?", id).Delete(&FeedStore{})
 		return res.RowsAffected, res.Error
 	}, delCacheAllKeys...)
 

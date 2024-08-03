@@ -81,7 +81,6 @@ func (m *defaultModel) NutritionStoreFindById(ctx context.Context, id int64) (*N
 		return db.WithContext(ctx).Model(&NutritionStore{}).Where("`id`=?", id).Take(r).Error
 	})
 	return &resp, err
-
 }
 
 func (m *defaultModel) NutritionStoreUpdateById(ctx context.Context, id int64, updateObj *NutritionStore, delCacheKeys []string, fields ...string) (int64, error) {
@@ -129,13 +128,12 @@ func (m *defaultModel) NutritionStoreDeleteById(ctx context.Context, id int64, d
 	delCacheAllKeys := make([]string, 0, 2+len(delCacheKeys))
 
 	delCacheAllKeys = append(delCacheAllKeys, nutritionStoreIdKey, nutritionStoreUserIdKey)
-
 	if len(delCacheKeys) > 0 {
 		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
 	}
 
 	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
-		res := db.Where("id = ?", id).Delete(&NutritionStore{})
+		res := db.Where("`id` = ?", id).Delete(&NutritionStore{})
 		return res.RowsAffected, res.Error
 	}, delCacheAllKeys...)
 

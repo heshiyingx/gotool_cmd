@@ -47,6 +47,7 @@ func genDeleteByPK(table Table, withCache bool) (string, string, error) {
 		Execute(map[string]any{
 			"upperStartCamelObject":     table.Name.ToCamel(), //模型名称
 			"lowerStartCamelPrimaryKey": util.EscapeGolangKeyword(stringx.From(table.PrimaryKey.Fields[0].Name.ToCamel()).Untitle()),
+			"originalPrimaryKey":        wrapWithRawString(table.PrimaryKey.Fields[0].Name.Source()),
 			"withCache":                 withCache,
 			"containsIndexCache":        table.ContainsUniqueCacheKey, //是否包含唯一索引缓存
 			"titlePrimaryKey":           table.PrimaryKey.Fields[0].Name.Title(),

@@ -89,7 +89,6 @@ func (m *defaultModel) ChickenFindById(ctx context.Context, id int64) (*Chicken,
 		return db.WithContext(ctx).Model(&Chicken{}).Where("`id`=?", id).Take(r).Error
 	})
 	return &resp, err
-
 }
 
 func (m *defaultModel) ChickenUpdateById(ctx context.Context, id int64, updateObj *Chicken, delCacheKeys []string, fields ...string) (int64, error) {
@@ -130,13 +129,12 @@ func (m *defaultModel) ChickenDeleteById(ctx context.Context, id int64, delCache
 	delCacheAllKeys := make([]string, 0, 1+len(delCacheKeys))
 
 	delCacheAllKeys = append(delCacheAllKeys, chickenIdKey)
-
 	if len(delCacheKeys) > 0 {
 		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
 	}
 
 	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
-		res := db.Where("id = ?", id).Delete(&Chicken{})
+		res := db.Where("`id` = ?", id).Delete(&Chicken{})
 		return res.RowsAffected, res.Error
 	}, delCacheAllKeys...)
 

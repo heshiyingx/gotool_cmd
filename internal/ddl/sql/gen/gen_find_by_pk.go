@@ -9,7 +9,7 @@ import (
 )
 
 func genFindPK(table Table, withCache bool) (string, string, error) {
-	camel := table.Name.ToCamel()
+	//camel := table.Name.ToCamel()
 	text, err := pathext.LoadTemplate(category, findOneTemplateFile, template.FindByPK)
 	if err != nil {
 		return "", "", err
@@ -19,14 +19,14 @@ func genFindPK(table Table, withCache bool) (string, string, error) {
 		Parse(text).
 		Execute(map[string]any{
 			"withCache":                 withCache,
-			"upperStartCamelObject":     camel,
-			"lowerStartCamelObject":     stringx.From(camel).Untitle(),
+			"upperStartCamelObject":     table.Name.ToCamel(),
+			"lowerStartCamelObject":     stringx.From(table.Name.ToCamel()).Untitle(),
 			"originalPrimaryKey":        wrapWithRawString(table.PrimaryKey.Fields[0].Name.Source()),
 			"titlePrimaryKey":           table.PrimaryKey.Fields[0].Name.Title(),
 			"lowerStartCamelPrimaryKey": util.EscapeGolangKeyword(stringx.From(table.PrimaryKey.Fields[0].Name.ToCamel()).Untitle()),
 			"dataType":                  table.PrimaryKey.Fields[0].DataType,
-			"cacheKey":                  table.PrimaryCacheKey.KeyExpression,
-			"cacheKeyVariable":          table.PrimaryCacheKey.KeyLeft,
+			"primaryCacheKeyExpress":    table.PrimaryCacheKey.KeyExpression,
+			"primaryCacheKeyName":       table.PrimaryCacheKey.KeyLeft,
 			"data":                      table,
 		})
 	if err != nil {
@@ -41,7 +41,7 @@ func genFindPK(table Table, withCache bool) (string, string, error) {
 	findOneMethod, err := util.With("findOneMethod").
 		Parse(text).
 		Execute(map[string]any{
-			"upperStartCamelObject":     camel,
+			"upperStartCamelObject":     table.Name.ToCamel(),
 			"lowerStartCamelPrimaryKey": util.EscapeGolangKeyword(stringx.From(table.PrimaryKey.Fields[0].Name.ToCamel()).Untitle()),
 			"titlePrimaryKey":           table.PrimaryKey.Fields[0].Name.Title(),
 			"dataType":                  table.PrimaryKey.Fields[0].DataType,
