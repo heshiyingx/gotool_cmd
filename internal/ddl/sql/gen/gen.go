@@ -180,7 +180,7 @@ func (g *defaultGenerator) createFile(modelList map[string]*codeTuple, defaultMo
 			return err
 		}
 
-		name := "gen_" + util.SafeString(modelFilename) + ".go"
+		name := "zzgen_" + util.SafeString(modelFilename) + ".go"
 		filename := filepath.Join(dirAbs, name)
 		err = os.WriteFile(filename, []byte(codes.modelCode), os.ModePerm)
 		if err != nil {
