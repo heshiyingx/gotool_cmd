@@ -315,3 +315,12 @@ func mayConvertNullType(goDataType string, isDefaultNull, unsigned, strict bool)
 		return goDataType
 	}
 }
+
+var NullTypeMap = map[string]struct{}{
+	"sql.NullInt64":   {},
+	"sql.NullInt32":   {},
+	"sql.NullFloat64": {},
+	"sql.NullBool":    {},
+	"sql.NullString":  {},
+	"sql.NullTime":    {},
+}

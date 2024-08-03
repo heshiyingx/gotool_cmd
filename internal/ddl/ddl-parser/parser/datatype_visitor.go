@@ -17,7 +17,7 @@
 package parser
 
 import (
-	"github.com/heshiyingx/gotool/dbext/ddl-parser/gen"
+	"github.com/heshiyingx/gotool_cmd/internal/ddl/ddl-parser/gen"
 )
 
 const (

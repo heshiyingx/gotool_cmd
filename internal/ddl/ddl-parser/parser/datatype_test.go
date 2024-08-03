@@ -17,10 +17,10 @@
 package parser
 
 import (
+	"github.com/heshiyingx/gotool_cmd/internal/ddl/ddl-parser/gen"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/heshiyingx/gotool/dbext/ddl-parser/gen"
 )
 
 func TestVisitor_VisitDataType(t *testing.T) {

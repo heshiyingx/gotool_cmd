@@ -1,10 +1,6 @@
 module github.com/heshiyingx/gotool_cmd
 
-replace github.com/antlr/antlr4/runtime/Go/antlr => github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20210521184019-c5ad59b459ec
-
-go 1.22
-
-toolchain go1.22.5
+go 1.21
 
 require (
 	github.com/antlr/antlr4/runtime/Go/antlr v1.4.10
@@ -37,7 +33,7 @@ require (
 	github.com/fatih/color v1.17.0 // indirect
 	github.com/go-faster/city v1.0.1 // indirect
 	github.com/go-faster/errors v0.7.1 // indirect
-	github.com/go-redsync/redsync/v4 v4.13.0 // indirect
+	github.com/go-redsync/redsync/v4 v4.12.1 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
@@ -79,3 +75,5 @@ require (
 )
 
 replace github.com/heshiyingx/gotool => /Users/john/study/code/gocode/gotools
+
+replace github.com/antlr/antlr4/runtime/Go/antlr => github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20210521184019-c5ad59b459ec

@@ -29,9 +29,10 @@ func genImports(table Table, withCache, timeImport bool) (string, error) {
 		}
 
 		buffer, err := util.With("import").Parse(text).Execute(map[string]any{
-			"time":  timeImport,
-			"data":  table,
-			"third": strings.Join(thirdImports, "\n"),
+			"time":         timeImport,
+			"containsNull": table.ContainsNullType(),
+			"data":         table,
+			"third":        strings.Join(thirdImports, "\n"),
 		})
 		if err != nil {
 			return "", err

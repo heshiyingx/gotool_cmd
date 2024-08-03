@@ -2,12 +2,12 @@ package parser
 
 import (
 	"fmt"
-	"github.com/heshiyingx/gotool/dbext/ddl-parser/parser"
-	"github.com/heshiyingx/gotool/dbext/sql/converter"
 	"github.com/heshiyingx/gotool/util"
 	collection2 "github.com/heshiyingx/gotool/util/collection"
 	"github.com/heshiyingx/gotool/util/console"
 	stringx "github.com/heshiyingx/gotool/util/stringext"
+	"github.com/heshiyingx/gotool_cmd/internal/ddl/ddl-parser/parser"
+	"github.com/heshiyingx/gotool_cmd/internal/ddl/sql/converter"
 	"path/filepath"
 	"strings"
 )
@@ -276,6 +276,14 @@ func convertColumns(columns []*parser.Column, primaryColumn *collection2.SortSet
 func (t *Table) ContainsTime() bool {
 	for _, item := range t.Fields {
 		if item.DataType == timeImport {
+			return true
+		}
+	}
+	return false
+}
+func (t *Table) ContainsNullType() bool {
+	for _, item := range t.Fields {
+		if _, ok := converter.NullTypeMap[item.DataType]; ok {
 			return true
 		}
 	}
