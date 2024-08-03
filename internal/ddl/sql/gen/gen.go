@@ -155,7 +155,7 @@ func (g *defaultGenerator) genFromDDL(filename string, withCache, strict bool, d
 	if err != nil {
 		return nil, "", err
 	}
-	fmt.Println(dbModelCode)
+	//fmt.Println(dbModelCode)
 	return m, dbModelCode, nil
 }
 func (g *defaultGenerator) createFile(modelList map[string]*codeTuple, defaultModelCode string) error {

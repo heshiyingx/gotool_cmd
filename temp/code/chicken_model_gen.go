@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	// "github.com/heshiyingx/gotool/dbext/gormdb/v2"
 	"gorm.io/gorm"
 )
 
@@ -128,7 +129,6 @@ func (m *defaultModel) ChickenDeleteById(ctx context.Context, id int64, delCache
 
 	delCacheAllKeys := make([]string, 0, 1+len(delCacheKeys))
 
-	// 1
 	delCacheAllKeys = append(delCacheAllKeys, chickenIdKey)
 
 	if len(delCacheKeys) > 0 {
@@ -136,7 +136,7 @@ func (m *defaultModel) ChickenDeleteById(ctx context.Context, id int64, delCache
 	}
 
 	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
-		res := db.WithContext(ctx).Where("id = ?", id).Delete(&Chicken{})
+		res := db.Where("id = ?", id).Delete(&Chicken{})
 		return res.RowsAffected, res.Error
 	}, delCacheAllKeys...)
 

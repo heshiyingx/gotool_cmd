@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/heshiyingx/gotool/dbext/gormdb/v2"
+	// "github.com/heshiyingx/gotool/dbext/gormdb/v2"
 	"gorm.io/gorm"
 )
 
@@ -132,15 +132,14 @@ func (m *defaultModel) NutritionStoreHistoryDeleteById(ctx context.Context, id i
 
 	delCacheAllKeys := make([]string, 0, 2+len(delCacheKeys))
 
-	// 0
-	delCacheAllKeys = append(delCacheAllKeys, nutritionStoreHistoryIdKey, nutritionStoreHistoryIdKey, nutritionStoreHistoryUserIdOpIdKey)
+	delCacheAllKeys = append(delCacheAllKeys, nutritionStoreHistoryIdKey, nutritionStoreHistoryUserIdOpIdKey)
 
 	if len(delCacheKeys) > 0 {
 		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
 	}
 
 	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
-		res := db.WithContext(ctx).Where("id = ?", id).Delete(&NutritionStoreHistory{})
+		res := db.Where("id = ?", id).Delete(&NutritionStoreHistory{})
 		return res.RowsAffected, res.Error
 	}, delCacheAllKeys...)
 

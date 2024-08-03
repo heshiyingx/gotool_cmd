@@ -147,7 +147,7 @@ func (cg *CacheGormDB[P]) QuerySingleNoCacheCtx(ctx context.Context, key string,
 
 // QueryNoCacheCtx 直接进行db查询
 func (cg *CacheGormDB[P]) QueryNoCacheCtx(ctx context.Context, result any, queryDBFun QueryCtxFn) error {
-	err := queryDBFun(ctx, result, cg.db)
+	err := queryDBFun(ctx, result, cg.db.WithContext(ctx))
 	return err
 }
 
@@ -166,14 +166,14 @@ func (cg *CacheGormDB[P]) DelCacheKeysAndDelay(ctx context.Context, keys ...stri
 	}
 	defer func() {
 		err := cg.antPool.Submit(func() {
-			deadline, cancelFunc := context.WithDeadline(ctx, time.Now().Add(time.Second))
+			deadline, cancelFunc := context.WithDeadline(context.Background(), time.Now().Add(time.Second))
 			defer cancelFunc()
 			select {
 			case <-deadline.Done():
 			}
 			err := cg.rdb.Del(context.Background(), keys...).Err()
 			if err != nil {
-				log.Printf("ant pool task doing err:%v", err)
+				log.Printf("ant pool task doing err:%v,keys:[%#v]", err, keys)
 				//cg.antFailChan <- keys
 			}
 		})
@@ -187,7 +187,7 @@ func (cg *CacheGormDB[P]) takeCtx(ctx context.Context, key string, result any, q
 
 	singleResult, err, share := cg.singleFlight.Do(key, func() (interface{}, error) {
 
-		err := query(ctx, result, cg.db)
+		err := query(ctx, result, cg.db.WithContext(ctx))
 		logx.WithContext(ctx).Debugf("takeCtx->queryFinish   key:%v,  result:%v,  err:%v", key, strext.ToJsonStr(result), err)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -236,7 +236,7 @@ func (cg *CacheGormDB[P]) takeCacheCtx(ctx context.Context, key string, result a
 
 		}
 
-		err = query(ctx, result, cg.db)
+		err = query(ctx, result, cg.db.WithContext(ctx))
 		logx.WithContext(ctx).Debugf("takeCacheCtx->queryFinish   key:%v  result:%v  err:%v", key, strext.ToJsonStr(result), err)
 
 		if err != nil {
@@ -322,7 +322,7 @@ func (cg *CacheGormDB[P]) ExecCtx(ctx context.Context, execFn ExecCtxFn, keys ..
 
 		}
 	}()
-	result, err := execFn(ctx, cg.db)
+	result, err := execFn(ctx, cg.db.WithContext(ctx))
 	if err != nil {
 		return 0, err
 	}

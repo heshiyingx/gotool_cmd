@@ -11,20 +11,32 @@ import (
 )
 
 func genDeleteByPK(table Table, withCache bool) (string, string, error) {
-	keySet := collection.NewSet[string]()
-	keyVariableSet := collection.NewSet[string]()
-	keySet.Add(table.PrimaryCacheKey.KeyExpression)
-	keyVariableSet.Add(table.PrimaryCacheKey.KeyLeft)
-	for _, key := range table.UniqueCacheKey {
-		keySet.Add(key.DataKeyExpression)
-		keyVariableSet.Add(key.KeyLeft)
-	}
-	keys := keySet.Elems()
-	sort.Strings(keys)
-	keyVars := keyVariableSet.Elems()
-	sort.Strings(keyVars)
+	uniqueCacheKeyExpressionSet := collection.NewSet[string]()
+	uniqueCacheKeyNameSet := collection.NewSet[string]()
+	allKeyExpressionSet := collection.NewSet[string]()
+	allKeyNameSet := collection.NewSet[string]()
+	primaryCacheKeyExpress := table.PrimaryCacheKey.KeyExpression
+	primaryCacheKeyName := table.PrimaryCacheKey.KeyLeft
 
-	camel := table.Name.ToCamel()
+	allKeyExpressionSet.Add(table.PrimaryCacheKey.KeyExpression)
+	allKeyNameSet.Add(table.PrimaryCacheKey.KeyLeft)
+	for _, key := range table.UniqueCacheKey {
+		uniqueCacheKeyExpressionSet.Add(key.DataKeyExpression)
+		uniqueCacheKeyNameSet.Add(key.KeyLeft)
+		allKeyExpressionSet.Add(key.DataKeyExpression)
+		allKeyNameSet.Add(key.KeyLeft)
+	}
+	uniqueCacheKeyNames := uniqueCacheKeyNameSet.Elems()
+	sort.Strings(uniqueCacheKeyNames)
+	uniqueCacheKeyExpressions := uniqueCacheKeyExpressionSet.Elems()
+	sort.Strings(uniqueCacheKeyExpressions)
+
+	allCacheKeyNames := allKeyNameSet.Elems()
+	sort.Strings(allCacheKeyNames)
+	allCacheKeyExpressions := allKeyExpressionSet.Elems()
+	sort.Strings(allCacheKeyExpressions)
+
+	//camel := table.Name.ToCamel()
 	text, err := pathext.LoadTemplate(category, deleteTemplateFile, template.Delete)
 	if err != nil {
 		return "", "", err
@@ -33,19 +45,23 @@ func genDeleteByPK(table Table, withCache bool) (string, string, error) {
 	output, err := util.With("delete").
 		Parse(text).
 		Execute(map[string]any{
-			"upperStartCamelObject":     camel,
-			"withCache":                 withCache,
-			"containsIndexCache":        table.ContainsUniqueCacheKey,
+			"upperStartCamelObject":     table.Name.ToCamel(), //模型名称
 			"lowerStartCamelPrimaryKey": util.EscapeGolangKeyword(stringx.From(table.PrimaryKey.Fields[0].Name.ToCamel()).Untitle()),
+			"withCache":                 withCache,
+			"containsIndexCache":        table.ContainsUniqueCacheKey, //是否包含唯一索引缓存
 			"titlePrimaryKey":           table.PrimaryKey.Fields[0].Name.Title(),
-			"dataType":                  table.PrimaryKey.Fields[0].DataType,
-			"keys":                      strings.Join(keys, "\n"),
-			"pkCacheKey":                table.PrimaryCacheKey.KeyLeft,
-			"uniqueCacheKeys":           keyVars,
-			"uniqueKeysLen":             len(table.UniqueCacheKey),
-			"keysLen":                   len(keys),
-			"cacheKeys":                 append(keyVars, wrapWithRawString(table.PrimaryKey.Fields[0].Name.Source())),
-			"data":                      table,
+			"primaryKeyType":            table.PrimaryKey.Fields[0].DataType,
+			"allCacheKeyExpressStr":     strings.Join(allCacheKeyExpressions, "\n"),
+			"allCacheKeyNameStr":        strings.Join(allCacheKeyNames, ","),
+			"allCacheKeyCount":          len(allCacheKeyNames),
+			"primaryCacheKeyName":       primaryCacheKeyName,
+			"primaryCacheKeyExpress":    primaryCacheKeyExpress,
+			//"pkCacheKey":                table.PrimaryCacheKey.KeyLeft,
+			//"uniqueCacheKeys":           keyVars,
+			//"uniqueKeysLen":             len(table.UniqueCacheKey),
+			//"keysLen":                   len(keys),
+			//"cacheKeys":                 append(keyVars, wrapWithRawString(table.PrimaryKey.Fields[0].Name.Source())),
+			//"data":                      table,
 		})
 	if err != nil {
 		return "", "", err
@@ -64,7 +80,7 @@ func genDeleteByPK(table Table, withCache bool) (string, string, error) {
 			"dataType":                  table.PrimaryKey.Fields[0].DataType,
 			"data":                      table,
 			"titlePrimaryKey":           table.PrimaryKey.Fields[0].Name.Title(),
-			"upperStartCamelObject":     camel,
+			"upperStartCamelObject":     table.Name.ToCamel(),
 		})
 	if err != nil {
 		return "", "", err

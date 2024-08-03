@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/heshiyingx/gotool/dbext/gormdb/v2"
+	// "github.com/heshiyingx/gotool/dbext/gormdb/v2"
 	"gorm.io/gorm"
 )
 
@@ -128,15 +128,14 @@ func (m *defaultModel) FeedStoreDeleteById(ctx context.Context, id int64, delCac
 
 	delCacheAllKeys := make([]string, 0, 2+len(delCacheKeys))
 
-	// 0
-	delCacheAllKeys = append(delCacheAllKeys, feedStoreIdKey, feedStoreIdKey, feedStoreUserIdKey)
+	delCacheAllKeys = append(delCacheAllKeys, feedStoreIdKey, feedStoreUserIdKey)
 
 	if len(delCacheKeys) > 0 {
 		delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...)
 	}
 
 	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
-		res := db.WithContext(ctx).Where("id = ?", id).Delete(&FeedStore{})
+		res := db.Where("id = ?", id).Delete(&FeedStore{})
 		return res.RowsAffected, res.Error
 	}, delCacheAllKeys...)
 
