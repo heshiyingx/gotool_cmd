@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/antlr/antlr4/runtime/Go/antlr v1.4.10
-	github.com/heshiyingx/gotool v0.0.13-beta.12
+	github.com/heshiyingx/gotool v0.0.13-beta.13
 	github.com/jinzhu/now v1.1.5
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/panjf2000/ants/v2 v2.10.0
@@ -74,6 +74,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/heshiyingx/gotool => /Users/john/study/code/gocode/gotools
+//replace github.com/heshiyingx/gotool => /Users/john/study/code/gocode/gotools
 
 replace github.com/antlr/antlr4/runtime/Go/antlr => github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20210521184019-c5ad59b459ec
