@@ -11,7 +11,7 @@ import (
 
 
 type defaultModel struct {
-	db *gormdb.CacheGormDB[{{.pkType}}]
+	db *gormdb.CacheGormDB
 }
 
 type DBModel interface {
@@ -20,7 +20,7 @@ type DBModel interface {
 
 func NewDBModel(config gormdb.Config) DBModel {
 
-	cacheGormDB := gormdb.MustNewCacheGormDB[{{.pkType}}](config)
+	cacheGormDB := gormdb.MustNewCacheGormDB(config)
 	return &defaultModel{
 		db: cacheGormDB,
 	}
