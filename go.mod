@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/antlr/antlr4/runtime/Go/antlr v1.4.10
-	github.com/heshiyingx/gotool v0.0.13-beta.14
+	github.com/heshiyingx/gotool v0.0.13-beta.15
 	github.com/jinzhu/now v1.1.5
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/panjf2000/ants/v2 v2.10.0

@@ -100,6 +100,8 @@ github.com/heshiyingx/gotool v0.0.13-beta.13 h1:Jd60JbvCZERvbWqPDY4/uS6qRssHGmIe
 github.com/heshiyingx/gotool v0.0.13-beta.13/go.mod h1:o5JrcqgBmfWtWJoE3O8L8SPgb7uRkhxm6rWq3rGKBEg=
 github.com/heshiyingx/gotool v0.0.13-beta.14 h1:GaKPRtkGGUlHqi820xN7bNrOV8lCe+cPjU7C1tGcKgc=
 github.com/heshiyingx/gotool v0.0.13-beta.14/go.mod h1:o5JrcqgBmfWtWJoE3O8L8SPgb7uRkhxm6rWq3rGKBEg=
+github.com/heshiyingx/gotool v0.0.13-beta.15 h1:E2AzrerHG8WEk9LRv7GcuH3Lf0RDq/sNTIF0nbUjsXo=
+github.com/heshiyingx/gotool v0.0.13-beta.15/go.mod h1:o5JrcqgBmfWtWJoE3O8L8SPgb7uRkhxm6rWq3rGKBEg=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
