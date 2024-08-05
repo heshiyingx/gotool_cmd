@@ -12,8 +12,6 @@ type DBModel interface {
 	FeedStoreDBInterface
 	FeedStoreHistoryDBInterface
 	NutritionStoreDBInterface
-	NutritionStoreHistoryDBInterface
-	ChickenDBInterface
 }
 
 func NewDBModel(config gormdb.Config) DBModel {
