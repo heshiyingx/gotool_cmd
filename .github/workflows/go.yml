@@ -19,7 +19,7 @@ jobs:
         cache: true
  
     - name: Build
-      run: go build -o gotool cmd/main.go
+      run: go build -v cmd/main.go
  
       # 使用 goreleaser 进行生成多平台代码并且上传到 github release 进行发布
     - name: Create release on GitHub
