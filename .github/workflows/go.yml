@@ -15,11 +15,11 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v3
       with:
-        go-version: 1.18
+        go-version: 1.21
         cache: true
  
     - name: Build
-      run: go build -v ./...
+      run: go build -o gotool cmd/main.go
  
       # 使用 goreleaser 进行生成多平台代码并且上传到 github release 进行发布
     - name: Create release on GitHub
