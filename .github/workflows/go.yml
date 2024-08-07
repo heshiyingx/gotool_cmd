@@ -26,10 +26,6 @@ jobs:
       - name: Build
         run: go build -o gotool -v cmd/main.go
 
-      # 确保 .goreleaser.yml 文件存在
-      - name: Check for goreleaser config
-        run: test -f .goreleaser.yml
-
       # 使用 goreleaser-action 生成多平台代码并发布到 GitHub Release
       - name: Create release on GitHub
         uses: goreleaser/goreleaser-action@v4
