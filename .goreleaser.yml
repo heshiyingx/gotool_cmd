@@ -52,9 +52,9 @@ builds:
     # GOARM 要构建的 ， 若GOARCH 是 arm时.
     # 更多内容，请参考: https://golang.org/doc/install/source#environment
     # 默认是 只有 6.
-    goarm:
-      - 6
-      - 7
+#    goarm:
+#      - 6
+#      - 7
 
     #  GOOS + GOARCH + GOARM 组合忽略列表.
     # 默认是 空.
