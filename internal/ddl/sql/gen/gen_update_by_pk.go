@@ -80,6 +80,7 @@ func genUpdateByPK(table Table, withCache bool) (
 			"lowerStartCamelPrimaryKey": util.EscapeGolangKeyword(stringx.From(table.PrimaryKey.Fields[0].Name.ToCamel()).Untitle()),
 			"dataType":                  table.PrimaryKey.Fields[0].DataType,
 			"pkCacheKey":                table.PrimaryCacheKey.KeyLeft,
+			"pkObjName":                 table.PrimaryKey.Fields[0].Name.ToCamel(),
 			"titlePrimaryKey":           table.PrimaryKey.Fields[0].Name.Title(),
 			"lowerStartCamelObject":     stringx.From(camelTableName).Untitle(),
 			"keysLen":                   len(keys),
@@ -116,6 +117,7 @@ func genUpdateByPK(table Table, withCache bool) (
 			"lowerStartCamelPrimaryKey": util.EscapeGolangKeyword(stringx.From(table.PrimaryKey.Fields[0].Name.ToCamel()).Untitle()),
 			"dataType":                  table.PrimaryKey.Fields[0].DataType,
 			"primaryKeyVariable":        table.PrimaryCacheKey.KeyLeft,
+			"pkObjName":                 table.PrimaryKey.Fields[0].Name.ToCamel(),
 			"titlePrimaryKey":           table.PrimaryKey.Fields[0].Name.Title(),
 			"lowerStartCamelObject":     stringx.From(camelTableName).Untitle(),
 			"upperStartCamelPrimaryKey": util.EscapeGolangKeyword(

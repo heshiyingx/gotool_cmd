@@ -32,7 +32,7 @@ func (m *defaultModel) {{.upperStartCamelObject}}UpdateOneBy{{.uniqueCombineName
         if len(delCacheKeys) > 0 { delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...) }
 
         return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
-            upTx := db.Model(&{{.upperStartCamelObject}}{}).Where("{{.pkNameWrap}}", {{.lowerStartCamelField}})
+            upTx := db.Model(&{{.upperStartCamelObject}}{}).Where("{{.pkNameWrap}}", data.{{.pkObjName}})
             if len(fields) > 0 {
                 upTx = upTx.Select(strings.Join(fields, ",")).Updates(updateObj)
             }else {
@@ -57,7 +57,7 @@ func (m *defaultModel) {{.upperStartCamelObject}}DeleteOneBy{{.uniqueCombineName
         if len(delCacheKeys) > 0 { delCacheAllKeys = append(delCacheAllKeys, delCacheKeys...) }
 
         return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
-            delTx := db.Where("{{.pkNameWrap}}", {{.lowerStartCamelField}}).Delete(&{{.upperStartCamelObject}}{})
+            delTx := db.Where("{{.pkNameWrap}}",  data.{{.pkObjName}}).Delete(&{{.upperStartCamelObject}}{})
             return delTx.RowsAffected,delTx.Error
         },delCacheAllKeys...)
 

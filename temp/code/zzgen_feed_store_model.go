@@ -177,7 +177,7 @@ func (m *defaultModel) FeedStoreUpdateOneByUserId(ctx context.Context, userId in
 	}
 
 	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
-		upTx := db.Model(&FeedStore{}).Where("`id`", userId)
+		upTx := db.Model(&FeedStore{}).Where("`id`", data.Id)
 		if len(fields) > 0 {
 			upTx = upTx.Select(strings.Join(fields, ",")).Updates(updateObj)
 		} else {
@@ -204,7 +204,7 @@ func (m *defaultModel) FeedStoreDeleteOneByUserId(ctx context.Context, userId in
 	}
 
 	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
-		delTx := db.Where("`id`", userId).Delete(&FeedStore{})
+		delTx := db.Where("`id`", data.Id).Delete(&FeedStore{})
 		return delTx.RowsAffected, delTx.Error
 	}, delCacheAllKeys...)
 

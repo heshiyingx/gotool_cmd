@@ -27,6 +27,7 @@ func genFindPK(table Table, withCache bool) (string, string, error) {
 			"dataType":                  table.PrimaryKey.Fields[0].DataType,
 			"primaryCacheKeyExpress":    table.PrimaryCacheKey.KeyExpression,
 			"primaryCacheKeyName":       table.PrimaryCacheKey.KeyLeft,
+			"pkObjName":                 table.PrimaryKey.Fields[0].Name.ToCamel(),
 			"data":                      table,
 		})
 	if err != nil {
@@ -45,6 +46,7 @@ func genFindPK(table Table, withCache bool) (string, string, error) {
 			"lowerStartCamelPrimaryKey": util.EscapeGolangKeyword(stringx.From(table.PrimaryKey.Fields[0].Name.ToCamel()).Untitle()),
 			"titlePrimaryKey":           table.PrimaryKey.Fields[0].Name.Title(),
 			"dataType":                  table.PrimaryKey.Fields[0].DataType,
+			"pkObjName":                 table.PrimaryKey.Fields[0].Name.ToCamel(),
 			"data":                      table,
 		})
 	if err != nil {
