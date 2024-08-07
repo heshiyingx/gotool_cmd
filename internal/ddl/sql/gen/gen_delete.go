@@ -57,6 +57,7 @@ func genDeleteByPK(table Table, withCache bool) (string, string, error) {
 			"allCacheKeyCount":          len(allCacheKeyNames),
 			"primaryCacheKeyName":       primaryCacheKeyName,
 			"primaryCacheKeyExpress":    primaryCacheKeyExpress,
+			"pkObjName":                 table.PrimaryKey.Fields[0].Name.ToCamel(),
 			//"pkCacheKey":                table.PrimaryCacheKey.KeyLeft,
 			//"uniqueCacheKeys":           keyVars,
 			//"uniqueKeysLen":             len(table.UniqueCacheKey),
