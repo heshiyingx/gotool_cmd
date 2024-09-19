@@ -34,7 +34,7 @@ func (m *defaultModel) {{.upperStartCamelObject}}UpdateOneBy{{.uniqueCombineName
         return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
             upTx := db.Model(&{{.upperStartCamelObject}}{}).Where("{{.pkNameWrap}}", data.{{.pkObjName}})
             if len(fields) > 0 {
-                upTx = upTx.Select(strings.Join(fields, ",")).Updates(updateObj)
+                upTx = upTx.Select(fields).Updates(updateObj)
             }else {
                 upTx = upTx.Save(updateObj)
             }
