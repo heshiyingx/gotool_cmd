@@ -16,7 +16,7 @@ func (m *defaultModel) {{.upperStartCamelObject}}UpdateBy{{.titlePrimaryKey}}(ct
 	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
 		upTx := db.WithContext(ctx).Model(&{{.upperStartCamelObject}}{}).Where("{{.originalPrimaryKey}}=?", {{.lowerStartCamelPrimaryKey}})
 		if len(fields) > 0 {
-			upTx = upTx.Select(strings.Join(fields, ",")).Updates(updateObj)
+			upTx = upTx.Select(fields).Updates(updateObj)
 		}else {
 			upTx = upTx.Save(updateObj)
 		}
@@ -29,7 +29,7 @@ func (m *defaultModel) {{.upperStartCamelObject}}UpdateBy{{.titlePrimaryKey}}(ct
 	return m.db.ExecCtx(ctx, func(ctx context.Context, db *gorm.DB) (int64, error) {
 		upTx := db.WithContext(ctx).Model(&{{.upperStartCamelObject}}{}).Where("{{.originalPrimaryKey}}=?", {{.lowerStartCamelPrimaryKey}})
 	if len(fields) > 0 {
-		upTx = upTx.Select(strings.Join(fields, ",")).Updates(updateObj)
+		upTx = upTx.Select(fields).Updates(updateObj)
 	} else {
 		upTx = upTx.Save(updateObj)
 	}
